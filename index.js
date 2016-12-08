@@ -64,8 +64,8 @@ program
             var maskPattern = /[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\/[0-9]{1,2}/;
             var betweenSession = new RegExp(`#### BEGIN ${options.section}((.|[\r\n])+)#### END ${options.section}`);
             var file = fs.readFileSync('/etc/hosts', 'utf8');
-
-            file = file.match(betweenSession)[1];
+            file = file.match(betweenSession) ? file.match(betweenSession)[1] : false;
+            if (!file) return [];
             var ips = file.match(/[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}/g);
             return ips || [];
         }
