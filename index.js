@@ -45,6 +45,7 @@ program
 program
     .command('mac-alias-clean')
     .option('-i, --iface [iface]', 'networkinterface')
+    .option('-s, --section [section]', 'in which section will search')
     .action(function(options) {
 
         if (!options.iface) return;
@@ -57,12 +58,23 @@ program
                 return Promise.fromCallback(cb => exec(`ifconfig ${options.iface} ${ip} -alias`, cb))
             })
         }
+
+        function getSectionsAddresses() {
+
+            var maskPattern = /[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\/[0-9]{1,2}/;
+            var betweenSession = new RegExp(`#### BEGIN ${options.section}((.|[\r\n])+)#### END ${options.section}`);
+            var file = fs.readFileSync('/etc/hosts', 'utf8');
+
+            file = file.match(betweenSession)[1];
+            var ips = file.match(/[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}/g);
+            return ips || [];
+        }
+
         function execPromise(ip) {
             return Promise.formCallback(cb => exec(`ifconfig lo0 ${ip} -alias`, cb));
         }
-        Promise.fromNode((cb) => exec(`ifconfig ${options.iface}`, cb))
-            .then(ips)
-            .catch(err => console.log('Error!'));
+
+        Promise.resolve(getSectionsAddresses()).map(ips);
     });
 
 program
